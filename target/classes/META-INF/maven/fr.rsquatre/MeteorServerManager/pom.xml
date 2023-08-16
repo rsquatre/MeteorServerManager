@@ -9,6 +9,13 @@
         <url>https://repo.papermc.io/repository/maven-public/</url>
     </repository>
 </repositories>
+<scm>
+    <connection>scm:git:https://github.com/rsquatre/MeteorServerManager.git</connection>
+    <developerConnection>scm:git:https://github.com/rsquatre/MeteorServerManager.git</developerConnection>
+    <url>https://github.com/rsquatre/MeteorServerManager</url>
+    <tag>master</tag>
+</scm>
+
   <build>
     <plugins>
       <plugin>
