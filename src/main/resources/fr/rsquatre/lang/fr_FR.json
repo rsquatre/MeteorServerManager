@@ -1,0 +1,4 @@
+{
+	"system.welcome" : "Meteor est en ligne !",
+	"system.error.init" : "Quelque chose tente de créer une instance de Meteor alors que le plugin est déjà initialisé ! Ceci n'est pas normal."
+}
