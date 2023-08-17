@@ -7,10 +7,7 @@ public abstract class Service {
 
 	public Service() {
 
-		if (Meteor.getInstance().isOnline(getClass())) {
-
-			throw new IllegalStateException(Meteor.getInstance().getService(TranslationFactory.class)
-					.translate("system.error.serviceAlreadyOnline"));
-		}
+		if (Meteor.isOnline(getClass()))
+			throw new IllegalStateException(Meteor.getService(TranslationFactory.class).translate("system.error.service_already_online_manual"));
 	}
 }

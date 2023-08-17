@@ -6,21 +6,21 @@ import java.nio.charset.Charset;
 
 import org.apache.commons.io.FileUtils;
 
-import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import fr.rsquatre.Meteor.Meteor;
 
 public class ConfigurationContext {
 
-	private String defaultLocale = "en_GB";
+	private String systemLocale = "en_GB";
 
-	public String getDefaultLocale() {
-		return defaultLocale;
+	public String getSystemLocale() {
+		return systemLocale;
 	}
 
 	public ConfigurationContext setDefaultLocale(String locale) {
 
-		defaultLocale = locale;
+		systemLocale = locale;
 		return this;
 	}
 
@@ -30,15 +30,14 @@ public class ConfigurationContext {
 
 			File configFile = new File(Meteor.getInstance().getDataFolder(), "config.json");
 
-			if (!configFile.exists()) {
-				configFile.createNewFile();
-			}
+			if (!configFile.exists()) { configFile.createNewFile(); }
 
-			FileUtils.write(configFile, new Gson().toJson(this), Charset.forName("UTF-8"));
+			FileUtils.write(configFile, new GsonBuilder().setPrettyPrinting().create().toJson(this), Charset.forName("UTF-8"));
 			return true;
 
 		} catch (IOException e) {
 			// TODO log + warn staff
+			e.printStackTrace();
 		}
 		return false;
 	}

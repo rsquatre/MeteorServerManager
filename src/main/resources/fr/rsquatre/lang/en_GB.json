@@ -1,5 +1,0 @@
-{
-	"system.welcome" : "Meteor is online!",
-	"system.error.init" : "Something is attempting to create a new Meteor instance! This is not normal."
-}
-}

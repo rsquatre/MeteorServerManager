@@ -3,11 +3,20 @@
   <groupId>fr.rsquatre</groupId>
   <artifactId>MeteorServerManager</artifactId>
   <version>0.0.1</version>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.17</maven.compiler.source>
+    <maven.compiler.target>1.17</maven.compiler.target>
+  </properties>
   <repositories>
     <repository>
         <id>paper-repo</id>
         <url>https://repo.papermc.io/repository/maven-public/</url>
     </repository>
+    	<repository>
+    	<id>spigot-repo</id>
+    	<url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+  	</repository>
 </repositories>
 <scm>
     <connection>scm:git:https://github.com/rsquatre/MeteorServerManager.git</connection>
@@ -15,7 +24,6 @@
     <url>https://github.com/rsquatre/MeteorServerManager</url>
     <tag>master</tag>
 </scm>
-
   <build>
     <plugins>
       <plugin>
@@ -33,10 +41,20 @@
         <configuration>
           <doCheck>true</doCheck>
           <doUpdate>true</doUpdate>
+          <format>{0,number}</format>
+      		<items>
+        		<item>buildNumber0</item>
+      		</items>
         </configuration>
       </plugin>
     </plugins>
     <finalName>${project.artifactId}-${project.version}-r${buildNumber}</finalName>
+    <resources>
+        <resource>
+            <directory>src/main/resources</directory>
+            <filtering>true</filtering>
+        </resource>
+    </resources>
   </build>
   <dependencies>
   	<dependency>
@@ -50,5 +68,11 @@
   		<artifactId>commons-io</artifactId>
   		<version>2.13.0</version>
   	</dependency>
+  	<dependency>
+  		<groupId>org.spigotmc</groupId>
+  		<artifactId>plugin-annotations</artifactId>
+  		<version>1.2.3-SNAPSHOT</version>
+  		<scope>provided</scope>
+	</dependency>
   </dependencies>
 </project>

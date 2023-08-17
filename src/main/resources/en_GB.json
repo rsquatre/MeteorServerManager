@@ -1,0 +1,11 @@
+{
+	"system.service_online" : "Successfuly loaded service : %s.",
+	"system.welcome" : "Meteor is online!",
+	"system.current_locale": "System locale : %s.",
+	"system.error.init" : "Something is attempting to create a new Meteor instance! This is not normal.",
+	"system.error.service_already_online" : "Tried to load %s but this service is already online! This is not normal.",
+	"system.error.service_offline" : "Tried to fetch service %s but it is offline! Possible causes are : misconfiguration, user override, dev mistake (I mean seriously? I wouldn't do that would I?), third party dev mistake (Yeah blame that one!)",
+	"system.error.service_loading" : "An exception occurred while trying to load service %s.",
+	"system.error.service_already_online_manual" : "Something tried to manually create a new instance of %s but this service is already online! Services should online be instanciated by Meteor with Meteor#load(Class<? extends Service>). This is not normal.",
+	"system.error.fatal" : "A FATAL ERROR HAS OCCURRED. THE SERVER WILL SHUTDOWN TO PROTECT DATA INTEGRITY. CHECK THE LOGS"
+}
