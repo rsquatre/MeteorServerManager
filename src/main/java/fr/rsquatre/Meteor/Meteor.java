@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
@@ -18,16 +19,20 @@ import com.google.gson.JsonSyntaxException;
 
 import fr.rsquatre.Meteor.service.translation.TranslationFactory;
 import fr.rsquatre.Meteor.system.ConfigurationContext;
+import fr.rsquatre.Meteor.system.ICriticalService;
 import fr.rsquatre.Meteor.system.Logger;
 import fr.rsquatre.Meteor.system.Service;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextColor;
 
 public class Meteor extends JavaPlugin {
 
 	private static Meteor instance = null;
+	private static boolean loaded = false;
 
 	private ConfigurationContext context = null;
 
+	private HashSet<Class<? extends Service>> registeredServices = new HashSet<>();
 	private HashMap<Class<? extends Service>, Service> services = new HashMap<>();
 
 	public Meteor() {
@@ -72,6 +77,30 @@ public class Meteor extends JavaPlugin {
 
 	}
 
+	@Override
+	public void onLoad() {
+
+		loaded = true;
+	}
+
+	@Override
+	public void onEnable() {
+
+	}
+
+	@Override
+	public void onDisable() {
+
+	}
+
+	public static boolean register(Class<? extends Service> service) {
+
+		// TODO
+
+		instance.registeredServices.add(service);
+		return true;
+	}
+
 	public static boolean load(Class<? extends Service> service) {
 
 		return load(service, new Class[0], new Object[0]);
@@ -81,20 +110,43 @@ public class Meteor extends JavaPlugin {
 
 		try {
 
+			if (!instance.registeredServices.contains(service))
+				throw new IllegalArgumentException(
+						Meteor.getService(TranslationFactory.class).translate("system.error.service_not_registered", service.getName()));
+
 			if (instance.services.containsKey(service.getClass()))
 				throw new IllegalStateException(
 						Meteor.getService(TranslationFactory.class).translate("system.error.service_already_online", service.getName()));
 
-			instance.services.put(service, service.getConstructor(argTypes).newInstance(args));
+			Service srv = service.getConstructor(argTypes).newInstance(args);
+
+			if (srv.hasFailed())
+				throw new IllegalStateException(Meteor.isOnline(TranslationFactory.class)
+						? Meteor.getService(TranslationFactory.class).translate("system.error.service_faillure", service.getName())
+						: String.format(
+								"An instance of %s was successfuly created but the service is marked as failled and will not be accessible. Check the logs for errors.",
+								service.getName()));
+
+			instance.services.put(service, srv);
 			Logger.log(Meteor.getService(TranslationFactory.class).translate("system.service_online", service.getName()));
 
 		} catch (Exception e) {
 
-			Logger.error(Meteor.isOnline(TranslationFactory.class)
-					? Meteor.getService(TranslationFactory.class).translate("system.error.service_loading", service.getName())
-					: String.format("An exception occurred while trying to lead service %s.", service.getName()));
-			e.printStackTrace();
+			if (ICriticalService.class.isAssignableFrom(service)) {
 
+				e.printStackTrace();
+				Logger.fatal(Meteor.isOnline(TranslationFactory.class)
+						? Meteor.getService(TranslationFactory.class).translate("system.error.critical_service_loading", service.getName())
+						: String.format("An exception occurred while trying to load service %s. Meteor cannot operate properly without this service.",
+								service.getName()));
+
+			} else {
+
+				Logger.error(Meteor.isOnline(TranslationFactory.class)
+						? Meteor.getService(TranslationFactory.class).translate("system.error.service_loading", service.getName())
+						: String.format("An exception occurred while trying to load service %s.", service.getName()));
+				e.printStackTrace();
+			}
 			return false;
 		}
 
@@ -143,10 +195,19 @@ public class Meteor extends JavaPlugin {
 		for (Player p : Bukkit.getOnlinePlayers()) {
 
 			p.kick(Component.text(Meteor.isOnline(TranslationFactory.class) ? Meteor.getService(TranslationFactory.class).translate("system.error.fatal")
-					: "A FATAL ERROR HAS OCCURRED. THE SERVER WILL SHUTDOWN TO PROTECT DATA INTEGRITY. CHECK THE LOGS."), Cause.PLUGIN);
+					: "A FATAL ERROR HAS OCCURRED. THE SERVER WILL SHUTDOWN TO PROTECT DATA INTEGRITY. CHECK THE LOGS.", TextColor.color(200, 0, 0)),
+					Cause.PLUGIN);
 		}
 
-		Bukkit.shutdown();
+		// If possible, get time to print the stacktrace in case it's called after
+		// Logger#fatal
+		if (loaded) {
+
+			Bukkit.getScheduler().runTask(instance, () -> { Bukkit.shutdown(); });
+
+		} else {
+			Bukkit.shutdown();
+		}
 
 	}
 }

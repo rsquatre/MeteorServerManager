@@ -7,5 +7,8 @@
 	"system.error.service_offline" : "Tried to fetch service %s but it is offline! Possible causes are : misconfiguration, user override, dev mistake (I mean seriously? I wouldn't do that would I?), third party dev mistake (Yeah blame that one!)",
 	"system.error.service_loading" : "An exception occurred while trying to load service %s.",
 	"system.error.service_already_online_manual" : "Something tried to manually create a new instance of %s but this service is already online! Services should online be instanciated by Meteor with Meteor#load(Class<? extends Service>). This is not normal.",
-	"system.error.fatal" : "A FATAL ERROR HAS OCCURRED. THE SERVER WILL SHUTDOWN TO PROTECT DATA INTEGRITY. CHECK THE LOGS"
+	"system.error.fatal" : "A FATAL ERROR HAS OCCURRED. THE SERVER WILL SHUTDOWN TO PROTECT DATA INTEGRITY. CHECK THE LOGS",
+	"system.error.service_faillure" : "An instance of %s was successfuly created but the service is marked as failled and will not be accessible. Check the logs for errors.",
+	"system.error.service_not_registered" : "%s is not a registered services. Services must be registered and validated before being loaded.",
+	"system.error.critical_service_loading" : "An exception occurred while trying to load service %s. Meteor cannot operate properly without this service."
 }

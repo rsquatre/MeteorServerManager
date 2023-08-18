@@ -13,10 +13,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import fr.rsquatre.Meteor.Meteor;
+import fr.rsquatre.Meteor.system.ICriticalService;
 import fr.rsquatre.Meteor.system.Logger;
 import fr.rsquatre.Meteor.system.Service;
 
-public class TranslationFactory extends Service {
+public class TranslationFactory extends Service implements ICriticalService {
 
 	public static final String[] DEFAULT_LOCALES = { "en_GB", "fr_FR" };
 
@@ -24,28 +25,55 @@ public class TranslationFactory extends Service {
 
 	public TranslationFactory() {
 
-		try {
+		getTranslationsFolder().mkdirs();
 
-			getTranslationsFolder().mkdirs();
+		int updated = updateLocalFiles(writeDefaults());
 
-			// TODO check for missing translations in current in local files
+		if (updated > 0) {
 
-			File[] localeFiles = getTranslationsFolder().listFiles(file -> file.getName().toLowerCase().matches("^\\w{2}_\\w{2}\\.json$"));
-			Logger.info(String.format("Found %d locale files. Checking for updates...", localeFiles.length));
+			Logger.log(String.format("Successfuly updated %d locale files.", updated));
+		} else {
 
-			int updated = 0;
-			HashMap<String, HashMap<String, String>> embeddedLocales = new HashMap<>();
+			Logger.log("All locales are up to date.");
+		}
 
-			// Fetch embedded locales and create local files if missing
-			for (String locale : DEFAULT_LOCALES) {
+	}
+
+	public HashMap<String, HashMap<String, String>> writeDefaults() {
+
+		HashMap<String, HashMap<String, String>> embeddedLocales = new HashMap<>();
+
+		// Fetch embedded locales and create local files if missing
+		for (String locale : DEFAULT_LOCALES) {
+
+			try {
 
 				String translations = Meteor.readEmbedded(locale.concat(".json"));
 				embeddedLocales.put(locale, new Gson().fromJson(translations, TypeToken.getParameterized(HashMap.class, String.class, String.class).getType()));
 
 				if (!getTranslationsFile(locale).exists()) { FileUtils.write(getTranslationsFile(locale), translations, StandardCharsets.UTF_8); }
-			}
 
-			for (File localeFile : localeFiles) {
+			} catch (IOException e) {
+
+				Logger.error(e.getMessage()); // TODO custom message
+				failed = true;
+				e.printStackTrace();
+			}
+		}
+
+		return embeddedLocales;
+	}
+
+	public int updateLocalFiles(HashMap<String, HashMap<String, String>> fallback) {
+
+		File[] localeFiles = getTranslationFiles();
+		int updated = 0;
+
+		Logger.info(String.format("Found %d locale files. Checking for updates...", localeFiles.length));
+
+		for (File localeFile : localeFiles) {
+
+			try {
 
 				HashMap<String, String> translations = new Gson().fromJson(FileUtils.readFileToString(localeFile, StandardCharsets.UTF_8),
 						TypeToken.getParameterized(HashMap.class, String.class, String.class).getType());
@@ -54,7 +82,7 @@ public class TranslationFactory extends Service {
 				// provided locale and add missing translations
 				boolean dirty = false;
 				String locale = localeFile.getName().substring(0, 5);
-				for (Entry<String, String> entry : embeddedLocales.getOrDefault(locale, embeddedLocales.get("en_GB")).entrySet()) {
+				for (Entry<String, String> entry : fallback.getOrDefault(locale, fallback.get("en_GB")).entrySet()) {
 
 					if (!translations.containsKey(entry.getKey())) {
 						translations.put(entry.getKey(), entry.getValue());
@@ -73,21 +101,34 @@ public class TranslationFactory extends Service {
 				}
 
 				locales.put(locale, translations);
+
+			} catch (IOException e) {
+
+				Logger.error(e.getMessage()); // TODO custom message
+				failed = true;
+				e.printStackTrace();
 			}
-
-			if (updated > 0) {
-
-				Logger.log(String.format("Successfuly updated %d locale files.", updated));
-			} else {
-
-				Logger.log("All locales are up to date.");
-			}
-
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
 
+		return updated;
+	}
+
+	public void readLocalFiles() {
+
+		for (File locale : getTranslationFiles()) {
+
+			try {
+
+				locales.put(locale.getName().substring(0, 5), new Gson().fromJson(FileUtils.readFileToString(locale, StandardCharsets.UTF_8),
+						TypeToken.getParameterized(HashMap.class, String.class, String.class).getType()));
+
+			} catch (IOException e) {
+
+				Logger.error(e.getMessage()); // TODO custom message
+				failed = true;
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public boolean isLocaleAvailable(String locale) {
@@ -130,6 +171,11 @@ public class TranslationFactory extends Service {
 	public static File getTranslationsFile(String locale) {
 
 		return new File(getTranslationsFolder(), locale.toLowerCase().endsWith(".json") ? locale : locale.concat(".json"));
+	}
+
+	public static File[] getTranslationFiles() {
+
+		return getTranslationsFolder().listFiles(file -> file.getName().toLowerCase().matches("^\\w{2}_\\w{2}\\.json$"));
 	}
 
 }
