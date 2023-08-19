@@ -1,7 +1,7 @@
 /**
  *
  */
-package fr.rsquatre.Meteor;
+package fr.rsquatre.Meteor.service.security;
 
 import fr.rsquatre.Meteor.system.Service;
 

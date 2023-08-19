@@ -14,6 +14,8 @@ public class ConfigurationContext {
 
 	private String systemLocale = "en_GB";
 
+	private boolean cacheEnabled = true;
+
 	public String getSystemLocale() {
 		return systemLocale;
 	}
@@ -21,6 +23,17 @@ public class ConfigurationContext {
 	public ConfigurationContext setDefaultLocale(String locale) {
 
 		systemLocale = locale;
+		return this;
+	}
+
+	public boolean isCacheEnabled() {
+
+		return cacheEnabled;
+	}
+
+	public ConfigurationContext setCacheEnabled(boolean enabled) {
+
+		cacheEnabled = enabled;
 		return this;
 	}
 
